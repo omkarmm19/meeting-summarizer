@@ -52,8 +52,9 @@ app.include_router(upload.router, prefix="/api")
 app.include_router(meetings.router, prefix="/api")
 
 
-@app.get(
+@app.api_route(
     "/",
+    methods=["GET", "HEAD"],
     status_code=status.HTTP_200_OK,
     tags=["System"],
     summary="Root health and welcome endpoint"
