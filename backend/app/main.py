@@ -21,8 +21,11 @@ logger = logging.getLogger("meetlytic")
 async def lifespan(app: FastAPI):
     # Initialize database tables on startup
     logger.info("Initializing database tables...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database schema initialized successfully.")
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database schema initialized successfully.")
+    except Exception as exc:
+        logger.warning(f"Could not connect to database on startup ({exc}). Will connect on demand.")
     yield
     logger.info("Shutting down Meetlytic application.")
 

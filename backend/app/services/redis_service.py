@@ -20,7 +20,6 @@ def get_redis_client() -> Optional[redis.Redis]:
                 socket_connect_timeout=2,
                 socket_timeout=2
             )
-            # Test connection
             _redis_client.ping()
         except Exception as exc:
             logger.warning(f"Redis not available ({str(exc)}). Continuing without cache.")
@@ -37,8 +36,7 @@ def update_meeting_cache(meeting_id: str, status: str, error_message: Optional[s
                 "status": status,
                 "error_message": error_message
             }
-            client.setex(f"meeting:{meeting_id}:status", ttl_seconds, json.dumps(payload))
-            # Publish event to status channel for real-time subscribers if any
+            client.set(f"meeting:{meeting_id}:status", json.dumps(payload), ex=ttl_seconds)
             client.publish(f"meeting:{meeting_id}:events", json.dumps(payload))
     except Exception as exc:
         logger.warning(f"Failed to update Redis cache for meeting {meeting_id}: {exc}")
@@ -62,7 +60,7 @@ def ping_redis() -> bool:
     try:
         client = get_redis_client()
         if client:
-            return client.ping()
+            return bool(client.ping())
     except Exception:
         return False
     return False
