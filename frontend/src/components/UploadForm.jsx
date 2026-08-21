@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { uploadAudioFile } from '../api/client';
 
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB Whisper limit
 
@@ -49,11 +50,12 @@ export default function UploadForm({ onUploadStart, onUploadSuccess, onError }) 
     try {
       setIsUploading(true);
       onUploadStart();
-      await onUploadSuccess(selectedFile);
+      const uploadRes = await uploadAudioFile(selectedFile);
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      onUploadSuccess(uploadRes);
     } catch (err) {
       onError(err.message || 'Failed to upload audio file');
     } finally {
