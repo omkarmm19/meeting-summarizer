@@ -53,6 +53,21 @@ app.include_router(meetings.router, prefix="/api")
 
 
 @app.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    tags=["System"],
+    summary="Root health and welcome endpoint"
+)
+def root():
+    return {
+        "status": "ok",
+        "message": "Meeting Summarizer API is live",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
+
+
+@app.get(
     "/api/health",
     response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
