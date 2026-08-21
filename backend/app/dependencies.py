@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -13,20 +13,27 @@ security = HTTPBearer(auto_error=False)
 
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    token: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ) -> User:
     """
-    FastAPI dependency to extract and authenticate the current user from the Authorization Bearer header.
+    FastAPI dependency to extract and authenticate the current user.
+    Accepts token from Authorization: Bearer header or ?token= query parameter (for media streaming).
     """
-    if not credentials or not credentials.credentials:
+    raw_token = None
+    if credentials and credentials.credentials:
+        raw_token = credentials.credentials
+    elif token:
+        raw_token = token
+
+    if not raw_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication token required.",
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    token = credentials.credentials
-    payload = decode_access_token(token)
+    payload = decode_access_token(raw_token)
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

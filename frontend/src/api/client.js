@@ -177,7 +177,9 @@ export async function deleteMeeting(meetingId) {
 }
 
 export function getAudioStreamUrl(meetingId) {
-  return `${API_BASE}/meetings/${meetingId}/audio`;
+  const token = getAuthToken();
+  const queryParam = token ? `?token=${encodeURIComponent(token)}` : '';
+  return `${API_BASE}/meetings/${meetingId}/audio${queryParam}`;
 }
 
 export async function checkHealth() {
