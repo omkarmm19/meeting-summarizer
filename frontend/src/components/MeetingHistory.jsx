@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatShortDate } from '../utils/date';
 
 export default function MeetingHistory({
   meetings,
@@ -13,21 +14,6 @@ export default function MeetingHistory({
   const filteredMeetings = meetings.filter((m) =>
     (m.filename || '').toLowerCase().includes(filterQuery.toLowerCase())
   );
-
-  const formatDate = (isoString) => {
-    if (!isoString) return '';
-    try {
-      const date = new Date(isoString);
-      return date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return isoString;
-    }
-  };
 
   return (
     <aside className="sidebar">
@@ -93,7 +79,7 @@ export default function MeetingHistory({
               </div>
 
               <div className="history-item-meta">
-                <span>{formatDate(meeting.created_at)}</span>
+                <span>{formatShortDate(meeting.created_at)}</span>
                 <button
                   type="button"
                   style={{

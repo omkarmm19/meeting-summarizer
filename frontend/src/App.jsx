@@ -7,6 +7,7 @@ import ActionItemsList from './components/ActionItemsList';
 import TranscriptView from './components/TranscriptView';
 import MeetingHistory from './components/MeetingHistory';
 import AudioPlayer from './components/AudioPlayer';
+import { formatLocalDateTime } from './utils/date';
 
 export default function App() {
   const [meetings, setMeetings] = useState([]);
@@ -116,7 +117,7 @@ export default function App() {
     if (!currentMeeting) return;
 
     let md = `# Meeting Summary: ${currentMeeting.filename}\n\n`;
-    md += `**Date:** ${new Date(currentMeeting.created_at).toLocaleString()}\n`;
+    md += `**Date:** ${formatLocalDateTime(currentMeeting.created_at)}\n`;
     md += `**Status:** ${currentMeeting.status}\n\n`;
 
     md += `## 📋 Executive Overview\n\n${currentMeeting.summary || 'N/A'}\n\n`;
@@ -186,7 +187,7 @@ export default function App() {
             </h1>
             <p>
               {currentMeeting
-                ? `Uploaded on ${new Date(currentMeeting.created_at).toLocaleString()}`
+                ? `Uploaded on ${formatLocalDateTime(currentMeeting.created_at)}`
                 : 'Upload audio recordings to transcribe speech and extract action-oriented AI summaries'}
             </p>
           </div>
