@@ -12,9 +12,20 @@ export default function TranscriptView({ transcript }) {
     try {
       await navigator.clipboard.writeText(transcript);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1000); // 1 second confirmation
+      setTimeout(() => setCopied(false), 1000);
     } catch {
       // Fallback
+    }
+  };
+
+  const getMatchCount = () => {
+    if (!searchTerm.trim()) return 0;
+    try {
+      const regex = new RegExp(searchTerm.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
+      const matches = transcript.match(regex);
+      return matches ? matches.length : 0;
+    } catch {
+      return 0;
     }
   };
 
@@ -34,6 +45,7 @@ export default function TranscriptView({ transcript }) {
   };
 
   const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
+  const matchCount = getMatchCount();
 
   return (
     <div className="card-flat card-interactive">
@@ -57,10 +69,15 @@ export default function TranscriptView({ transcript }) {
             <input
               type="text"
               className="transcript-search-input mono-text"
-              placeholder="Search transcript..."
+              placeholder="Search words..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <span className="search-match-count mono-text">
+                {matchCount} {matchCount === 1 ? 'match' : 'matches'}
+              </span>
+            )}
           </div>
 
           <button

@@ -246,9 +246,36 @@ export default function App() {
             </h1>
             <p>
               {currentMeeting
-                ? `Uploaded ${formatLocalDateTime(currentMeeting.created_at)}`
+                ? `Recording analysis and actionable outcomes`
                 : 'Upload an audio recording to generate a transcript, summary, and action items.'}
             </p>
+
+            {currentMeeting && (
+              <div className="meeting-meta-ribbon">
+                <div className="meta-ribbon-chip mono-text">
+                  <span className="chip-label">📅 Uploaded:</span>
+                  <span>{formatLocalDateTime(currentMeeting.created_at)}</span>
+                </div>
+                {currentMeeting.transcript && (
+                  <div className="meta-ribbon-chip mono-text">
+                    <span className="chip-label">📝 Words:</span>
+                    <span>{currentMeeting.transcript.trim().split(/\s+/).filter(Boolean).length}</span>
+                  </div>
+                )}
+                {currentMeeting.action_items && currentMeeting.action_items.length > 0 && (
+                  <div className="meta-ribbon-chip mono-text">
+                    <span className="chip-label">👥 Assignees:</span>
+                    <span>
+                      {[...new Set(currentMeeting.action_items.map((a) => a.owner).filter(Boolean))].join(', ') || 'Team'}
+                    </span>
+                  </div>
+                )}
+                <div className="meta-ribbon-chip mono-text status-chip">
+                  <span className="chip-label">Status:</span>
+                  <span className={`status-text ${currentMeeting.status}`}>{currentMeeting.status}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {currentMeeting && currentMeeting.status === 'done' && (

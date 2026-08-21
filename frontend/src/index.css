@@ -1,6 +1,6 @@
 /* ==========================================================================
    MEETING SUMMARIZER DESIGN SYSTEM
-   Editorial Internal Tool Theme (Polished Hierarchy & Micro-interactions)
+   Editorial Internal Tool Theme (Elevated UI/UX, Waveform Audio & Productivity Suite)
    Palette: Light Cream (#f4f1ea), Neutral (#23201d), Terracotta (#c25e3a)
    Typography: Fraunces (Serif) + Inter (Sans) + JetBrains Mono (Monospace)
    ========================================================================== */
@@ -203,7 +203,8 @@ button {
 }
 
 /* Copy Button confirmation state */
-.btn-copy.is-copied {
+.btn-copy.is-copied,
+.btn-copy-tasks.is-copied {
   background-color: var(--success-bg) !important;
   border-color: var(--success-border) !important;
   color: var(--success) !important;
@@ -259,7 +260,7 @@ button {
   transition: all 0.15s ease;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
@@ -285,7 +286,7 @@ button {
   background-color: var(--accent-subtle);
   border: 1px solid var(--accent-border);
   padding: 2px 6px;
-  align-self: center;
+  flex-shrink: 0;
 }
 
 .history-item-name {
@@ -310,6 +311,7 @@ button {
   color: var(--text-dim);
   padding: 2px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .btn-delete-item:hover {
@@ -391,7 +393,7 @@ button {
   background-color: var(--danger-bg);
 }
 
-/* Main Content Area: Constrained to ~950px for optimal readability */
+/* Main Content Area */
 .main-content {
   flex: 1;
   padding: 40px 48px;
@@ -424,20 +426,50 @@ button {
   color: var(--text-muted);
 }
 
+/* Meeting Metadata Header Ribbon */
+.meeting-meta-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.meta-ribbon-chip {
+  font-size: 0.72rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-ribbon-chip .chip-label {
+  color: var(--text-dim);
+}
+
+.meta-ribbon-chip.status-chip .status-text {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .btn-action-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Cards (Flat, 1px solid border, sharp corners, subtle micro-interaction lift) */
+/* Cards */
 .glass-card,
 .card-flat {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   padding: 28px 30px;
-  margin-bottom: 36px; /* 36px vertical spacing between sections */
+  margin-bottom: 36px;
 }
 
 .card-interactive {
@@ -450,7 +482,7 @@ button {
   border-color: var(--border-dark);
 }
 
-/* Summary Card Hierarchy Accent (4px Terracotta Left Border) */
+/* Summary Card Hierarchy Accent */
 .card-summary-primary {
   border-left: 4px solid var(--accent);
   background-color: #ffffff;
@@ -463,7 +495,7 @@ button {
   color: var(--text-main);
 }
 
-/* Upload Box (Flat, Plain Bordered Box) */
+/* Upload Box */
 .upload-box {
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
@@ -520,10 +552,7 @@ button {
   font-weight: 600;
 }
 
-/* ==========================================================================
-   STATUS STEPPER (Icons, Animated Connecting Line & Pulse)
-   ========================================================================== */
-
+/* Status Stepper */
 .stepper-container {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -655,7 +684,7 @@ button {
 }
 
 /* ==========================================================================
-   CUSTOM AUDIO PLAYER (Terracotta Play Button, Progress Fill, Monospace Time)
+   CUSTOM AUDIO PLAYER (Waveform, Skip Buttons, Volume & Speed)
    ========================================================================== */
 
 .custom-audio-card {
@@ -684,11 +713,42 @@ button {
   color: var(--text-muted);
 }
 
+/* Animated Waveform Bars */
+.audio-waveform-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 16px;
+}
+
+.audio-waveform-bars .bar {
+  width: 3px;
+  background-color: var(--border-dark);
+  height: 4px;
+  border-radius: 1px;
+  transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+.audio-waveform-bars.is-playing .bar {
+  background-color: var(--accent);
+  animation: sound-wave 1.2s infinite ease-in-out;
+}
+
+.audio-waveform-bars.is-playing .bar:nth-child(1) { animation-delay: 0.0s; }
+.audio-waveform-bars.is-playing .bar:nth-child(2) { animation-delay: 0.2s; }
+.audio-waveform-bars.is-playing .bar:nth-child(3) { animation-delay: 0.4s; }
+.audio-waveform-bars.is-playing .bar:nth-child(4) { animation-delay: 0.1s; }
+.audio-waveform-bars.is-playing .bar:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes sound-wave {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
 .audio-speed-btn {
   background-color: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
-  font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 3px 8px;
@@ -703,13 +763,13 @@ button {
 .audio-controls-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .audio-play-btn {
   width: 36px;
   height: 36px;
-  border-radius: 50% !important; /* Circular terracotta play button */
+  border-radius: 50% !important;
   background-color: var(--accent);
   border: 1px solid var(--accent);
   color: #ffffff;
@@ -723,6 +783,25 @@ button {
 .audio-play-btn:hover {
   background-color: var(--accent-hover);
   transform: scale(1.05);
+}
+
+.audio-skip-btn {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.audio-skip-btn:hover {
+  border-color: var(--border-dark);
+  color: var(--text-main);
+  background-color: var(--bg-subtle);
 }
 
 .audio-progress-track {
@@ -761,6 +840,22 @@ button {
 
 .time-divider {
   color: var(--text-dim);
+}
+
+.audio-volume-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.audio-volume-btn:hover {
+  color: var(--accent);
 }
 
 /* ==========================================================================
@@ -807,22 +902,73 @@ button {
 }
 
 /* ==========================================================================
-   ACTION ITEMS TABLE & EMPTY STATE
+   ACTION ITEMS TABLE, FILTER TABS & PROGRESS BAR
    ========================================================================== */
 
 .section-header-flex {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.action-counter-badge {
-  font-size: 0.74rem;
-  color: var(--text-dim);
-  background-color: var(--bg-subtle);
-  padding: 3px 8px;
+.action-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-filter-pills {
+  display: flex;
+  background-color: var(--bg-input);
   border: 1px solid var(--border-color);
+  padding: 2px;
+  gap: 2px;
+}
+
+.filter-pill {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.filter-pill.active {
+  background-color: var(--bg-card);
+  color: var(--accent);
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+}
+
+.action-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.action-progress-track {
+  flex: 1;
+  height: 4px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+}
+
+.action-progress-fill {
+  height: 100%;
+  background-color: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.action-progress-text {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
 }
 
 .action-table-wrapper {
@@ -897,12 +1043,19 @@ button {
   gap: 4px;
 }
 
+.action-meta-tag.deadline-tag {
+  background-color: var(--accent-subtle);
+  border-color: var(--accent-border);
+  color: var(--accent-hover);
+  font-weight: 600;
+}
+
 .meta-empty {
   color: var(--text-dim);
   font-size: 0.8rem;
 }
 
-/* Proper Empty State for Action Items */
+/* Empty State */
 .empty-state-card {
   padding: 36px 20px;
   background-color: var(--bg-input);
@@ -942,7 +1095,7 @@ button {
 }
 
 /* ==========================================================================
-   TRANSCRIPT TYPOGRAPHY & CONSTRAINED READING WIDTH (~700px)
+   TRANSCRIPT TYPOGRAPHY & LIVE MATCH COUNT
    ========================================================================== */
 
 .transcript-header-bar {
@@ -985,7 +1138,7 @@ button {
   padding: 7px 10px 7px 28px;
   font-size: 0.78rem;
   color: var(--text-main);
-  width: 200px;
+  width: 220px;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -993,6 +1146,16 @@ button {
 .transcript-search-input:focus {
   border-color: var(--accent);
   background-color: #ffffff;
+}
+
+.search-match-count {
+  position: absolute;
+  right: 8px;
+  font-size: 0.68rem;
+  color: var(--accent);
+  background-color: var(--accent-subtle);
+  padding: 1px 5px;
+  border-radius: var(--radius);
 }
 
 .transcript-box-constrained {
@@ -1005,9 +1168,9 @@ button {
 }
 
 .transcript-body-text {
-  max-width: 700px; /* Constrained reading width */
+  max-width: 700px;
   font-size: 0.94rem;
-  line-height: 1.7; /* 1.7 line height for optimal readability */
+  line-height: 1.7;
   color: var(--text-main);
   white-space: pre-wrap;
 }
@@ -1020,45 +1183,146 @@ button {
 }
 
 /* ==========================================================================
-   AUTH SCREEN / MODAL
+   SPLIT-SCREEN HERO AUTH PAGE
    ========================================================================== */
 
-.auth-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(35, 32, 29, 0.4);
+.auth-overlay-split {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  z-index: 9999;
+  background-color: var(--bg-app);
+  padding: 32px 20px;
 }
 
-.auth-card {
+.auth-split-wrapper {
   width: 100%;
-  max-width: 400px;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: 32px 28px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(35, 32, 29, 0.06);
 }
 
-.auth-header {
-  text-align: center;
-  margin-bottom: 20px;
+@media (max-width: 768px) {
+  .auth-split-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .auth-hero-panel {
+    display: none;
+  }
 }
 
-.auth-header h2 {
-  font-size: 1.4rem;
+.auth-hero-panel {
+  background-color: var(--bg-subtle);
+  border-right: 1px solid var(--border-color);
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.auth-hero-headline {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.auth-hero-desc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.auth-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.feature-bullet-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.feature-title {
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-main);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
-.auth-subtitle {
-  font-size: 0.82rem;
+.feature-sub {
+  font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+.auth-hero-footer {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-demo-quick {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-demo-quick:hover {
+  background-color: var(--accent-subtle);
+  border-color: var(--accent);
+}
+
+.auth-form-panel {
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-panel-heading {
+  margin-bottom: 24px;
+}
+
+.btn-toggle-password {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-card-footer {
+  margin-top: 24px;
+  text-align: center;
 }
 
 .auth-tabs {
@@ -1067,7 +1331,7 @@ button {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   padding: 2px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
   gap: 2px;
 }
 
