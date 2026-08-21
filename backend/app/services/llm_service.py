@@ -1,6 +1,5 @@
 import json
 import logging
-from typing import Dict, Any
 from groq import Groq
 from app.config import settings
 from app.schemas import MeetingStructuredSummary
