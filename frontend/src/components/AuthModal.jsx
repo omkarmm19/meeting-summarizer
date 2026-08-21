@@ -10,13 +10,6 @@ export default function AuthModal({ onAuthSuccess }) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const fillDemoAccount = () => {
-    setEmail('om@gmail.com');
-    setPassword('omkar123');
-    setMode('login');
-    setErrorMessage('');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -103,17 +96,6 @@ export default function AuthModal({ onAuthSuccess }) {
                 <div className="feature-sub">Automatic owner detection with exact timeframes</div>
               </div>
             </div>
-          </div>
-
-          <div className="auth-hero-footer">
-            <button
-              type="button"
-              className="btn-demo-quick"
-              onClick={fillDemoAccount}
-              title="Pre-fill working demo account"
-            >
-              <span>⚡ One-Click Demo Credentials</span>
-            </button>
           </div>
         </div>
 
