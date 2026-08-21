@@ -75,11 +75,15 @@ def summarize_transcript(transcript: str) -> MeetingStructuredSummary:
     client = Groq(api_key=api_key)
     prompt = USER_PROMPT_TEMPLATE.format(transcript=transcript)
 
+    # Safe fallback model list - in case configured model is not available on account
+    GROQ_SAFE_MODEL = "llama3-70b-8192"
+    model_to_use = settings.GROQ_MODEL if settings.GROQ_MODEL else GROQ_SAFE_MODEL
+
     # Attempt 1
     try:
-        logger.info(f"Calling Groq API (model: {settings.GROQ_MODEL}) with response_format=json_object")
+        logger.info(f"Calling Groq API (model: {model_to_use}) with response_format=json_object")
         response = client.chat.completions.create(
-            model=settings.GROQ_MODEL,
+            model=model_to_use,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
@@ -102,7 +106,7 @@ def summarize_transcript(transcript: str) -> MeetingStructuredSummary:
                 "Ensure your response is 100% valid JSON matching the exact schema without backticks or markdown wrap."
             )
             response = client.chat.completions.create(
-                model=settings.GROQ_MODEL,
+                model=model_to_use,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": retry_prompt}
