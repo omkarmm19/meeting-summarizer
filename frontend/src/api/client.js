@@ -3,7 +3,9 @@
  * Interacts with FastAPI backend endpoints with JWT Authentication & Tenant Isolation
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, '')}/api`
+  : '/api';
 const TOKEN_KEY = 'meetlytic_jwt_token';
 const USER_KEY = 'meetlytic_user';
 
