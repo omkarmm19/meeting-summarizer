@@ -49,20 +49,13 @@ export default function AuthModal({ onAuthSuccess }) {
   return (
     <div className="auth-overlay">
       <div className="auth-card">
-        {/* Brand Banner */}
         <div className="auth-header">
-          <div className="brand-icon auth-brand-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="22" />
-            </svg>
-          </div>
-          <h2>Meetlytic AI</h2>
-          <p className="auth-subtitle">AI-Powered Meeting Intelligence & Transcript Summarizer</p>
+          <h2>Meeting Summarizer</h2>
+          <p className="auth-subtitle">
+            {mode === 'signup' ? 'Create an account to store transcripts and summaries.' : 'Sign in to access your meeting records.'}
+          </p>
         </div>
 
-        {/* Tab Toggle */}
         <div className="auth-tabs">
           <button
             type="button"
@@ -72,7 +65,7 @@ export default function AuthModal({ onAuthSuccess }) {
               setErrorMessage('');
             }}
           >
-            Sign In
+            Sign in
           </button>
           <button
             type="button"
@@ -82,32 +75,25 @@ export default function AuthModal({ onAuthSuccess }) {
               setErrorMessage('');
             }}
           >
-            Create Account
+            Sign up
           </button>
         </div>
 
-        {/* Error Alert */}
         {errorMessage && (
           <div className="auth-error-banner">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Auth Form */}
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === 'signup' && (
             <div className="form-group">
-              <label htmlFor="auth-fullname">Full Name</label>
+              <label htmlFor="auth-fullname">Name</label>
               <input
                 id="auth-fullname"
                 type="text"
                 className="form-input"
-                placeholder="John Doe"
+                placeholder="Full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 autoComplete="name"
@@ -116,12 +102,12 @@ export default function AuthModal({ onAuthSuccess }) {
           )}
 
           <div className="form-group">
-            <label htmlFor="auth-email">Email Address</label>
+            <label htmlFor="auth-email">Email</label>
             <input
               id="auth-email"
               type="email"
               className="form-input"
-              placeholder="you@company.com"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -135,7 +121,7 @@ export default function AuthModal({ onAuthSuccess }) {
               id="auth-password"
               type="password"
               className="form-input"
-              placeholder="••••••••"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -145,27 +131,19 @@ export default function AuthModal({ onAuthSuccess }) {
 
           <button
             type="submit"
-            className="btn-primary auth-submit-btn"
+            className="auth-submit-btn"
             disabled={loading}
           >
             {loading ? (
               <span className="auth-spinner-wrapper">
                 <span className="spinner-small" />
-                <span>{mode === 'signup' ? 'Creating Account...' : 'Signing In...'}</span>
+                <span>{mode === 'signup' ? 'Creating account...' : 'Signing in...'}</span>
               </span>
             ) : (
-              <span>{mode === 'signup' ? 'Create Account & Get Started' : 'Sign In to Workspace'}</span>
+              <span>{mode === 'signup' ? 'Create account' : 'Sign in'}</span>
             )}
           </button>
         </form>
-
-        <div className="auth-footer-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <span>Isolated workspace • Encrypted JWT session</span>
-        </div>
       </div>
     </div>
   );

@@ -4,19 +4,9 @@ import { uploadAudioFile } from '../api/client';
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB Whisper limit
 
 export default function UploadForm({ onUploadStart, onUploadSuccess, onError }) {
-  const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
 
   const validateAndSelectFile = (file) => {
     if (!file) return;
@@ -27,14 +17,6 @@ export default function UploadForm({ onUploadStart, onUploadSuccess, onError }) 
     }
 
     setSelectedFile(file);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      validateAndSelectFile(e.dataTransfer.files[0]);
-    }
   };
 
   const handleFileInput = (e) => {
@@ -64,67 +46,62 @@ export default function UploadForm({ onUploadStart, onUploadSuccess, onError }) 
   };
 
   return (
-    <div className="glass-card">
-      <div className="card-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-        <span>Upload Meeting Audio</span>
-      </div>
+    <div className="card-flat">
+      <div className="card-title">Upload audio recording</div>
 
       <form onSubmit={handleSubmit}>
-        <div
-          className={`dropzone ${isDragging ? 'drag-active' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileInput}
-            accept=".mp3,.wav,.m4a,.mp4,.webm,.ogg,.flac,.aac"
-            style={{ display: 'none' }}
-          />
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileInput}
+          accept=".mp3,.wav,.m4a,.mp4,.webm,.ogg,.flac,.aac"
+          style={{ display: 'none' }}
+        />
 
-          <div className="upload-icon-bubble">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="22" />
-            </svg>
-          </div>
-
-          <div>
-            <div className="upload-text-main">
-              {selectedFile ? selectedFile.name : 'Choose an audio file or drag & drop here'}
+        <div className="upload-box">
+          {!selectedFile ? (
+            <>
+              <button
+                type="button"
+                className="btn-choose-file"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Choose file
+              </button>
+              <div className="upload-hint">
+                Supported formats: MP3, WAV, M4A, AAC, WEBM, OGG (Max 25 MB)
+              </div>
+            </>
+          ) : (
+            <div className="selected-file-banner">
+              <div>
+                <span className="file-name-tag">{selectedFile.name}</span>
+                <span className="timestamp" style={{ marginLeft: '10px' }}>
+                  ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                </span>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setSelectedFile(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                disabled={isUploading}
+                style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+              >
+                Change
+              </button>
             </div>
-            <div className="upload-text-sub">
-              {selectedFile
-                ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to process`
-                : 'Supports MP3, WAV, M4A, AAC, WEBM, OGG (Max 25MB)'}
-            </div>
-          </div>
-
-          <div className="format-tags">
-            <span className="format-tag">.MP3</span>
-            <span className="format-tag">.WAV</span>
-            <span className="format-tag">.M4A</span>
-            <span className="format-tag">.AAC</span>
-            <span className="format-tag">.OGG</span>
-          </div>
+          )}
         </div>
 
         {selectedFile && (
-          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
             <button
               type="button"
               className="btn-secondary"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 setSelectedFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
@@ -134,11 +111,11 @@ export default function UploadForm({ onUploadStart, onUploadSuccess, onError }) 
             </button>
             <button
               type="submit"
-              className="btn-new-meeting"
-              style={{ width: 'auto', margin: 0 }}
+              className="btn-primary"
+              style={{ width: 'auto' }}
               disabled={isUploading}
             >
-              {isUploading ? 'Uploading...' : 'Start Transcription & Analysis'}
+              {isUploading ? 'Uploading...' : 'Process recording'}
             </button>
           </div>
         )}

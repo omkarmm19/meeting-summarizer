@@ -235,31 +235,22 @@ export default function App() {
         <header className="dashboard-header">
           <div className="dashboard-title-group">
             <h1>
-              {currentMeeting ? currentMeeting.filename : 'Meeting Intelligence Workspace'}
+              {currentMeeting ? currentMeeting.filename : 'Meeting Summarizer'}
             </h1>
             <p>
               {currentMeeting
-                ? `Uploaded on ${formatLocalDateTime(currentMeeting.created_at)}`
-                : `Welcome back, ${currentUser.full_name || currentUser.email}. Upload an audio recording to transcribe speech and extract AI summaries.`}
+                ? `Uploaded ${formatLocalDateTime(currentMeeting.created_at)}`
+                : 'Upload an audio recording to generate a transcript, summary, and action items.'}
             </p>
           </div>
 
           {currentMeeting && currentMeeting.status === 'done' && (
             <div className="btn-action-group">
               <button type="button" className="btn-secondary" onClick={handleExportMarkdown}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Export Markdown</span>
+                Export Markdown
               </button>
               <button type="button" className="btn-secondary" onClick={handleExportJSON}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-                <span>Export JSON</span>
+                Export JSON
               </button>
             </div>
           )}
