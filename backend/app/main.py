@@ -38,25 +38,13 @@ app = FastAPI(
 )
 
 # Configure CORS Middleware
-cors_origins = settings.cors_origins_list
-is_wildcard = "*" in cors_origins or settings.CORS_ORIGINS.strip() == "*"
-
-if is_wildcard:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origin_regex=r"^https?://.*",
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-else:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register Routers
 app.include_router(auth.router, prefix="/api")
