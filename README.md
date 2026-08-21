@@ -1,12 +1,32 @@
 # Meeting Summarizer
 
-A full-stack web application that transcribes meeting audio and extracts structured summaries, key decisions, and action items with assigned owners and deadlines.
+A full-stack AI meeting intelligence workspace that transcribes audio recordings using Whisper ASR, generates structured executive summaries, and extracts deadline-tracked action items with assigned owners using Groq LLMs.
+
+[![CI Pipeline](https://github.com/omkarmm19/meeting-summarizer/actions/workflows/ci.yml/badge.svg)](https://github.com/omkarmm19/meeting-summarizer/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-black?style=flat&logo=vercel)](https://meeting-summarizer-omkar.vercel.app)
+[![API Status](https://img.shields.io/badge/Backend_API-Render-46E3B7?style=flat&logo=render)](https://meeting-summarizer-4pe8.onrender.com/api/health)
 
 ---
 
-## Problem Statement
+## Live Deployments
 
-Meetings often produce lengthy discussions where decisions and action items get buried in audio recordings or unorganized notes. This project automates the extraction of concise executive overviews, key decisions, and task lists from uploaded audio files using speech recognition and large language model extraction.
+- **Frontend Application (Vercel):** [https://meeting-summarizer-omkar.vercel.app](https://meeting-summarizer-omkar.vercel.app)
+- **Backend API (Render):** [https://meeting-summarizer-4pe8.onrender.com](https://meeting-summarizer-4pe8.onrender.com)
+- **API Documentation (Swagger UI):** [https://meeting-summarizer-4pe8.onrender.com/docs](https://meeting-summarizer-4pe8.onrender.com/docs)
+- **Health Check Endpoint:** [https://meeting-summarizer-4pe8.onrender.com/api/health](https://meeting-summarizer-4pe8.onrender.com/api/health)
+
+---
+
+## Key Features
+
+- **Split-Hero Editorial Workspace:** Clean, editorial design system featuring warm cream (`#f4f1ea`), terracotta (`#c25e3a`) accents, Fraunces serif headings, and JetBrains Mono metadata typography.
+- **Whisper Speech-to-Text (ASR):** Automatic transcription using OpenAI Whisper (`whisper-1`) with automated fallback to Groq Whisper (`whisper-large-v3`).
+- **Deterministic Structured LLM Extraction:** Uses Groq (`openai/gpt-oss-120b`) in JSON Mode with `temperature: 0.0` for consistent, hallucination-free executive summaries and decisions.
+- **Strict Assignee & Deadline Tracking:** Detects specific clock times (`11:15 AM`, `11:30 AM`), timeframes (`Before arrival`, `End of meeting`), and assigned owners for every action item.
+- **Custom Interactive Audio Player:** Built-in HTML5 waveform visualizer, skip +/- 5s controls, volume/mute toggle, speed selector (`1x`, `1.25x`, `1.5x`, `2x`), and authenticated Blob streaming.
+- **Action Items Productivity Suite:** Interactive checkboxes with live completion progress bar (`X of Y completed`), status filter tabs (`All`, `Pending`, `Done`), and one-click Markdown checklist export.
+- **Searchable Transcripts:** Real-time word search with match counter and one-click clipboard copy.
+- **Multi-Tenant JWT Isolation:** Full user authentication with bcrypt password hashing and tenant-isolated meeting storage.
 
 ---
 
@@ -14,25 +34,36 @@ Meetings often produce lengthy discussions where decisions and action items get 
 
 ```text
 +-------------------------------------------------------------------------+
-|                              Web Browser                                |
-|        (React 18 + Vite UI, Authentication, Audio Player, Export)       |
+|                        Web Browser (Client UI)                          |
+|  - React 18 + Vite SPA                                                  |
+|  - Custom Waveform Audio Player & Scrubbing                             |
+|  - Instant Optimistic State & Polling Coordination                     |
+|  - Export Markdown / JSON                                               |
 +------------------------------------+------------------------------------+
                                      |
-                       HTTP / REST (JWT Bearer Auth)
+                       HTTPS / REST (JWT Bearer / Query Token)
                                      |
                                      v
 +-------------------------------------------------------------------------+
-|                             FastAPI Backend                             |
-|  - Auth Routes: /api/auth (signup, login, profile)                      |
-|  - Meeting Routes: /api/meetings (upload, list, detail, audio, delete)  |
-|  - Background Tasks: Audio processing & pipeline coordination           |
+|                         Vercel Edge Proxy Layer                         |
+|  - Global Static Asset CDN Hosting                                      |
+|  - vercel.json: Reverse Proxy /api/* -> Render Backend                  |
++------------------------------------+------------------------------------+
+                                     |
+                                     v
++-------------------------------------------------------------------------+
+|                         FastAPI Backend (Render)                        |
+|  - Auth Endpoints: /api/auth (signup, login, profile)                   |
+|  - Meeting Endpoints: /api/meetings (upload, list, detail, audio, delete|
+|  - System Endpoints: / and /api/health (UptimeRobot monitoring)         |
+|  - Async Background Task Worker (Pipeline Orchestration)                |
 +-----------------+-------------------+-------------------+---------------+
                   |                   |                   |
                   v                   v                   v
      +--------------------+   +---------------+   +--------------------+
-     |  Neon PostgreSQL   |   | Upstash Redis |   | Local Disk Storage |
+     |  Neon PostgreSQL   |   | Upstash Redis |   | Cloud Disk Storage |
      | - Users & Auth     |   | - Status cache|   | - Uploaded audio   |
-     | - Metadata/Summary |   | - Pub/Sub     |   |   (storage/audio/) |
+     | - Metadata/Summary |   | - Fast polls  |   |   (storage/audio/) |
      +--------------------+   +---------------+   +--------------------+
                   |                   |
                   +---------+---------+
@@ -49,21 +80,24 @@ Meetings often produce lengthy discussions where decisions and action items get 
 
 ## Tech Stack
 
-- **Frontend**: React 18, Vite, Vanilla CSS
-- **Backend**: Python 3.10+, FastAPI, Uvicorn, SQLAlchemy ORM, Pydantic v2
-- **Authentication**: JWT (JSON Web Tokens), Bcrypt password hashing
-- **Database**: PostgreSQL (hosted on Neon Serverless) with SQLite local fallback
-- **Cache**: Redis (hosted on Upstash Serverless) with in-memory fallback
-- **Speech-to-Text (ASR)**: OpenAI Whisper API (`whisper-1`) with Groq Whisper (`whisper-large-v3`) fallback
-- **LLM Summarization**: Groq API (`openai/gpt-oss-120b`) using JSON Mode
-- **Testing**: Pytest, FastAPI TestClient, AnyIO
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, Vanilla CSS Design System, Lucide Icons |
+| **Backend** | Python 3.11, FastAPI, Uvicorn, SQLAlchemy ORM, Pydantic v2 |
+| **Database** | PostgreSQL (hosted on Neon Serverless) |
+| **Cache** | Redis (hosted on Upstash Serverless) |
+| **ASR (Speech-to-Text)** | OpenAI Whisper (`whisper-1`) + Groq Whisper (`whisper-large-v3`) fallback |
+| **LLM Inference** | Groq LPU (`openai/gpt-oss-120b`, `llama-3.3-70b-versatile`) in JSON Mode |
+| **Authentication** | JWT (JSON Web Tokens), Passlib Bcrypt |
+| **CI / CD & Cloud** | GitHub Actions, Vercel, Render, UptimeRobot |
+| **Containerization** | Docker, Docker Compose, Nginx Reverse Proxy |
 
 ---
 
 ## Setup Instructions
 
 ### Prerequisites
-- Python 3.10 or higher
+- Python 3.10+
 - Node.js 18+ and npm
 - (Optional) Docker and Docker Compose
 
@@ -79,13 +113,14 @@ Copy `.env.example` to `backend/.env`:
 cp .env.example backend/.env
 ```
 
-Fill in your service credentials in `backend/.env`:
-- **Neon PostgreSQL**: Create a free database at [neon.tech](https://neon.tech), copy the connection string (`postgresql://...`).
-- **Upstash Redis**: Create a free Redis database at [upstash.com](https://upstash.com), copy the `rediss://...` connection URL.
-- **Groq API Key**: Create a free API key at [console.groq.com](https://console.groq.com).
-- **OpenAI API Key**: Optional, from [platform.openai.com](https://platform.openai.com) (Groq Whisper acts as fallback if not set).
+Configure your credentials in `backend/.env`:
+- **`DATABASE_URL`**: Neon PostgreSQL connection string (`postgresql://...`).
+- **`REDIS_URL`**: Upstash Redis connection string (`rediss://...`).
+- **`GROQ_API_KEY`**: Groq API key from [console.groq.com](https://console.groq.com).
+- **`OPENAI_API_KEY`**: (Optional) OpenAI API key for primary Whisper transcription.
+- **`JWT_SECRET_KEY`**: Random 32+ character string for token signing.
 
-### 3. Run Backend
+### 3. Run Backend Locally
 ```bash
 # Create and activate virtual environment
 python3 -m venv .venv
@@ -97,22 +132,22 @@ pip install -r backend/requirements.txt
 # Start backend server
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
-Backend API will run at `http://localhost:8000`. Swagger documentation is accessible at `http://localhost:8000/docs`.
+Backend API will run at `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`).
 
-### 4. Run Frontend
-In a new terminal:
+### 4. Run Frontend Locally
+In a separate terminal:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Frontend interface will run at `http://localhost:5173`.
+Frontend application will run at `http://localhost:5173`.
 
-### 5. (Alternative) Run with Docker Compose
+### 5. Run Entire Stack with Docker Compose
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
-Access the application at `http://localhost`.
+Access the application locally via Nginx at `http://localhost`.
 
 ---
 
@@ -131,149 +166,64 @@ Access the application at `http://localhost`.
 | `STORAGE_DIR` | Directory to store uploaded audio files | `./backend/storage/audio` |
 | `MAX_FILE_SIZE_MB` | Maximum allowed audio upload size | `25` |
 | `MOCK_SERVICES` | Set to `true` to run offline with mock responses | `false` |
-| `CORS_ORIGINS` | Comma-separated list of allowed frontend origins | `http://localhost:5173,http://localhost:80` |
+| `CORS_ORIGINS` | Allowed CORS origins for frontend requests | `*` |
 
 ---
 
-## API Documentation
-
-All protected endpoints require the `Authorization: Bearer <token>` header obtained from signup or login.
+## API Reference
 
 ### Authentication
 
 #### `POST /api/auth/signup`
-Registers a new user account.
-```bash
-curl -X POST "http://localhost:8000/api/auth/signup" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "securepassword123",
-    "full_name": "Alex Smith"
-  }'
-```
-**Response (201 Created):**
+Creates a new user account and returns a JWT access token.
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "token_type": "bearer",
-  "user": {
-    "id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
-    "email": "user@example.com",
-    "full_name": "Alex Smith",
-    "created_at": "2026-08-21T10:00:00+00:00"
-  }
+  "email": "user@example.com",
+  "password": "securepassword123",
+  "full_name": "Alex Smith"
 }
 ```
 
 #### `POST /api/auth/login`
-Authenticates user credentials.
-```bash
-curl -X POST "http://localhost:8000/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "securepassword123"
-  }'
+Authenticates credentials and returns a JWT token.
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword123"
+}
 ```
 
 #### `GET /api/auth/me`
-Fetches current authenticated user profile.
-```bash
-curl -X GET "http://localhost:8000/api/auth/me" \
-  -H "Authorization: Bearer <token>"
-```
+Returns the authenticated user's profile. Requires `Authorization: Bearer <token>`.
 
 ---
 
 ### Meetings
 
 #### `POST /api/meetings/upload`
-Uploads audio file and initiates background processing.
-```bash
-curl -X POST "http://localhost:8000/api/meetings/upload" \
-  -H "Authorization: Bearer <token>" \
-  -F "file=@meeting.wav"
-```
-**Response (201 Created):**
-```json
-{
-  "id": "7ab7925f-1f65-4654-81be-4f4b9f8d95fc",
-  "filename": "meeting.wav",
-  "status": "pending",
-  "message": "Audio file uploaded successfully. Processing initiated.",
-  "created_at": "2026-08-21T10:47:45.878724+00:00"
-}
-```
+Uploads audio file (`.mp3`, `.wav`, `.m4a`, `.aac`, `.ogg`, `.webm`) up to 25MB and triggers asynchronous background processing.
 
 #### `GET /api/meetings`
-Lists all meetings belonging to the authenticated user.
-```bash
-curl -X GET "http://localhost:8000/api/meetings" \
-  -H "Authorization: Bearer <token>"
-```
+Lists all meetings belonging to the authenticated user ordered by creation date.
 
 #### `GET /api/meetings/{id}`
-Returns complete analysis and transcript for a meeting.
-```bash
-curl -X GET "http://localhost:8000/api/meetings/7ab7925f-1f65-4654-81be-4f4b9f8d95fc" \
-  -H "Authorization: Bearer <token>"
-```
-**Response (200 OK):**
-```json
-{
-  "id": "7ab7925f-1f65-4654-81be-4f4b9f8d95fc",
-  "filename": "meeting.wav",
-  "file_size_bytes": 3249924,
-  "status": "done",
-  "transcript": "Speaker discussed project timeline and deliverables...",
-  "summary": "The team reviewed sprint milestones and assigned backend and frontend deliverables.",
-  "key_decisions": [
-    "Adopt PostgreSQL for relational metadata storage.",
-    "Target next Friday for initial feature freeze."
-  ],
-  "action_items": [
-    {
-      "task": "Deploy database migration scripts",
-      "owner": "Sarah",
-      "deadline": "Friday"
-    },
-    {
-      "task": "Update frontend state handling",
-      "owner": "David",
-      "deadline": "Next Tuesday"
-    }
-  ],
-  "error_message": null,
-  "created_at": "2026-08-21T10:47:45.878724+00:00",
-  "updated_at": "2026-08-21T10:48:21.646732+00:00"
-}
-```
+Returns complete analysis, status, transcript, executive summary, key decisions, and action items.
 
 #### `GET /api/meetings/{id}/audio`
-Streams raw audio for in-browser playback.
-```bash
-curl -X GET "http://localhost:8000/api/meetings/{id}/audio" \
-  -H "Authorization: Bearer <token>"
-```
+Streams raw audio for in-browser playback. Accepts authentication via `Authorization: Bearer <token>` header or `?token=<jwt>` query parameter. Supports both `GET` and `HEAD` requests for media preloading.
 
 #### `DELETE /api/meetings/{id}`
-Deletes meeting record from database and removes audio file from disk.
-```bash
-curl -X DELETE "http://localhost:8000/api/meetings/{id}" \
-  -H "Authorization: Bearer <token>"
-```
+Permanently deletes the meeting record and removes the associated audio file from storage.
 
 ---
 
-### System
+### System & Health
+
+#### `GET /`
+Root endpoint returning API status and docs URLs (used by UptimeRobot).
 
 #### `GET /api/health`
-Health check endpoint returning database and cache connection status.
-```bash
-curl -X GET "http://localhost:8000/api/health"
-```
-**Response (200 OK):**
+Detailed system health endpoint checking active connection to PostgreSQL and Redis.
 ```json
 {
   "status": "ok",
@@ -284,32 +234,23 @@ curl -X GET "http://localhost:8000/api/health"
 
 ---
 
-## Design Decisions
+## Automated Testing
 
-- **Neon PostgreSQL**: Provides a cloud-hosted serverless PostgreSQL instance so reviewers can run and test the application without installing or configuring a local database server.
-- **Upstash Redis**: Serves fast in-memory status checks during background processing so frontend polling does not overwhelm relational database queries.
-- **JWT Authentication & Tenant Isolation**: Implements user-level data isolation via foreign keys (`Meeting.user_id = User.id`), ensuring meetings are strictly private to each user.
-- **Whisper & Groq Pipeline**: OpenAI Whisper (`whisper-1`) provides high transcription accuracy, with Groq Whisper (`whisper-large-v3`) configured as an automated fallback. Groq LPU inference enables sub-2-second JSON structured extraction.
-- **Local Audio Storage**: Audio files are stored on disk (`backend/storage/audio/`) with unique UUID identifiers to avoid third-party storage overhead while maintaining data persistence.
-
----
-
-## Known Limitations
-
-1. **Speaker Diarization**: Whisper generates verbatim transcripts but does not automatically identify speaker names (diarization).
-2. **File Size Limit**: Audio files are limited to 25MB per upload (Whisper API maximum file size limit).
-3. **Polling vs WebSockets**: The UI polls the backend every 2.5 seconds while processing. WebSockets could be added for push-based updates.
-
----
-
-## Testing
-
-Run the automated test suite with pytest:
+Run the full pytest suite with:
 ```bash
 pytest backend/tests -v
 ```
 
-Current test status: **18 passed** (100% pass rate).
-- `test_api.py`: 8 tests covering health check, file upload, validation, retrieval, and deletion.
-- `test_auth.py`: 5 tests covering registration, login, error states, and multi-tenant isolation.
-- `test_services.py`: 5 tests covering ASR fallback, LLM parsing, validation errors, and end-to-end background processing.
+### Test Coverage (18 / 18 Passing):
+- `test_api.py` (8 tests): Health check, valid upload, invalid file extension rejection, empty file rejection, list meetings, meeting detail retrieval, 404 handling, and meeting deletion.
+- `test_auth.py` (5 tests): User signup & profile retrieval, duplicate email prevention, login validation, 401 unauthorized protection, and multi-tenant user data isolation.
+- `test_services.py` (5 tests): ASR service mock fallback, missing audio file handling, LLM structured JSON parsing, empty transcript validation error, and end-to-end background processor pipeline.
+
+---
+
+## Continuous Integration & Deployment
+
+- **GitHub Actions (CI):** Every push to `main` executes unit tests, builds the frontend bundle, and validates Docker Compose configurations.
+- **Vercel (CD):** Automatically deploys frontend updates with edge caching and API proxying.
+- **Render (CD):** Automatically deploys FastAPI backend with Uvicorn worker management.
+- **UptimeRobot:** Monitors `https://meeting-summarizer-4pe8.onrender.com/` on a 5-minute interval to keep the free instance warm.
