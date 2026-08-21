@@ -26,6 +26,8 @@ wheels/
 .pytest_cache/
 .coverage
 htmlcov/
+*.db
+*.sqlite3
 
 # Node.js
 node_modules/
@@ -45,6 +47,8 @@ frontend/dist-ssr/
 # Audio files storage (keep directory structure)
 backend/storage/audio/*
 !backend/storage/audio/.gitkeep
+backend/storage/*.wav
+backend/storage/*.mp3
 
 # IDEs & OS
 .vscode/

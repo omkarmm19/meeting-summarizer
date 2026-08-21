@@ -2,6 +2,10 @@ import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
+# Base backend directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_STORAGE_DIR = os.path.join(BASE_DIR, "storage", "audio")
+
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/meetings_db"
@@ -11,7 +15,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
     
-    STORAGE_DIR: str = "./storage/audio"
+    STORAGE_DIR: str = DEFAULT_STORAGE_DIR
     MAX_FILE_SIZE_MB: int = 25
     MOCK_SERVICES: bool = False
     
