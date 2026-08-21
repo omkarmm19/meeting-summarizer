@@ -2,25 +2,23 @@ import React from 'react';
 
 export default function SummaryCard({ summary, keyDecisions }) {
   return (
-    <div className="card-flat">
-      <div className="card-title">Summary & Key Decisions</div>
-
-      <div style={{ marginBottom: '24px' }}>
-        <p className="summary-text">
+    <div className="card-flat card-summary-primary card-interactive">
+      <div style={{ marginBottom: '20px' }}>
+        <span className="section-label">Executive Overview</span>
+        <h2 className="card-heading-serif">Meeting Summary</h2>
+        <p className="summary-body-text">
           {summary || 'No summary available yet.'}
         </p>
       </div>
 
       {keyDecisions && keyDecisions.length > 0 && (
-        <div>
-          <div className="stepper-header" style={{ marginBottom: '10px' }}>
-            Decisions ({keyDecisions.length})
-          </div>
+        <div className="summary-decisions-block">
+          <span className="section-label">Key Decisions Made ({keyDecisions.length})</span>
           <ul className="decisions-list">
             {keyDecisions.map((decision, index) => (
               <li key={index} className="decision-item">
                 <span className="decision-bullet">—</span>
-                <div>{decision}</div>
+                <span className="decision-content">{decision}</span>
               </li>
             ))}
           </ul>
