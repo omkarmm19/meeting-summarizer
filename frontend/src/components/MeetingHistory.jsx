@@ -8,12 +8,24 @@ export default function MeetingHistory({
   onNewMeetingClick,
   onDeleteMeeting,
   isLoading,
+  currentUser,
+  onLogout,
 }) {
   const [filterQuery, setFilterQuery] = useState('');
 
   const filteredMeetings = meetings.filter((m) =>
     (m.filename || '').toLowerCase().includes(filterQuery.toLowerCase())
   );
+
+  const getInitials = (name, email) => {
+    if (name && name.trim()) {
+      const parts = name.trim().split(/\s+/);
+      return parts.length >= 2
+        ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+        : parts[0].slice(0, 2).toUpperCase();
+    }
+    return (email || 'U').slice(0, 2).toUpperCase();
+  };
 
   return (
     <aside className="sidebar">
@@ -40,7 +52,7 @@ export default function MeetingHistory({
       </button>
 
       <div className="sidebar-section-title">
-        <span>Meeting History</span>
+        <span>My Meetings</span>
         <span>({meetings.length})</span>
       </div>
 
@@ -105,6 +117,37 @@ export default function MeetingHistory({
           ))
         )}
       </div>
+
+      {/* User Profile / Logout Footer */}
+      {currentUser && (
+        <div className="sidebar-user-footer">
+          <div className="user-avatar-chip">
+            <div className="user-avatar-badge">
+              {getInitials(currentUser.full_name, currentUser.email)}
+            </div>
+            <div className="user-info-text">
+              <div className="user-name" title={currentUser.full_name || currentUser.email}>
+                {currentUser.full_name || currentUser.email.split('@')[0]}
+              </div>
+              <div className="user-email" title={currentUser.email}>
+                {currentUser.email}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-logout"
+            title="Sign Out"
+            onClick={onLogout}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

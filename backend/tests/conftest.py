@@ -73,3 +73,49 @@ def client():
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def auth_user_a(db_session):
+    """Creates Test User A and returns user and auth headers."""
+    from app.models import User
+    from app.services.auth_service import hash_password, create_access_token
+    import uuid
+
+    uid = uuid.uuid4().hex[:8]
+    user = User(
+        id=str(uuid.uuid4()),
+        email=f"alice_{uid}@example.com",
+        hashed_password=hash_password("password123"),
+        full_name="Alice User"
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    token = create_access_token({"sub": user.id, "email": user.email})
+    headers = {"Authorization": f"Bearer {token}"}
+    return {"user": user, "headers": headers, "token": token}
+
+
+@pytest.fixture
+def auth_user_b(db_session):
+    """Creates Test User B and returns user and auth headers for tenant isolation testing."""
+    from app.models import User
+    from app.services.auth_service import hash_password, create_access_token
+    import uuid
+
+    uid = uuid.uuid4().hex[:8]
+    user = User(
+        id=str(uuid.uuid4()),
+        email=f"bob_{uid}@example.com",
+        hashed_password=hash_password("password456"),
+        full_name="Bob User"
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    token = create_access_token({"sub": user.id, "email": user.email})
+    headers = {"Authorization": f"Bearer {token}"}
+    return {"user": user, "headers": headers, "token": token}

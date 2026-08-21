@@ -5,9 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Meeting
+from app.models import Meeting, User
 from app.schemas import MeetingDetail, MeetingListItem
 from app.services.redis_service import get_cached_meeting_status
+from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/meetings", tags=["Meetings"])
 logger = logging.getLogger(__name__)
@@ -16,15 +17,17 @@ logger = logging.getLogger(__name__)
 @router.get(
     "",
     response_model=List[MeetingListItem],
-    summary="List all processed and in-flight meetings"
+    summary="List all meetings belonging to the authenticated user"
 )
 def list_meetings(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     meetings = (
         db.query(Meeting)
+        .filter(Meeting.user_id == current_user.id)
         .order_by(Meeting.created_at.desc())
         .offset(skip)
         .limit(limit)
@@ -36,20 +39,25 @@ def list_meetings(
 @router.get(
     "/{meeting_id}",
     response_model=MeetingDetail,
-    summary="Retrieve details and analysis for a specific meeting"
+    summary="Retrieve details and analysis for a specific user meeting"
 )
 def get_meeting(
     meeting_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    meeting = db.query(Meeting).filter(Meeting.id == meeting_id).first()
+    meeting = (
+        db.query(Meeting)
+        .filter(Meeting.id == meeting_id, Meeting.user_id == current_user.id)
+        .first()
+    )
     if not meeting:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Meeting with ID '{meeting_id}' not found."
         )
 
-    # If meeting is still in-progress, we can optionally inspect Redis for fast sync
+    # If meeting is still in-progress, inspect Redis for fast sync
     cached = get_cached_meeting_status(meeting_id)
     if cached and meeting.status in ["pending", "transcribing", "summarizing"]:
         if cached.get("status") and cached.get("status") != meeting.status:
@@ -60,13 +68,18 @@ def get_meeting(
 
 @router.get(
     "/{meeting_id}/audio",
-    summary="Stream raw meeting audio file for playback"
+    summary="Stream raw meeting audio file for authenticated user playback"
 )
 def stream_meeting_audio(
     meeting_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    meeting = db.query(Meeting).filter(Meeting.id == meeting_id).first()
+    meeting = (
+        db.query(Meeting)
+        .filter(Meeting.id == meeting_id, Meeting.user_id == current_user.id)
+        .first()
+    )
     if not meeting:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -100,13 +113,18 @@ def stream_meeting_audio(
 @router.delete(
     "/{meeting_id}",
     status_code=status.HTTP_200_OK,
-    summary="Delete a meeting and remove its audio file from storage"
+    summary="Delete an authenticated user meeting and remove its audio file"
 )
 def delete_meeting(
     meeting_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    meeting = db.query(Meeting).filter(Meeting.id == meeting_id).first()
+    meeting = (
+        db.query(Meeting)
+        .filter(Meeting.id == meeting_id, Meeting.user_id == current_user.id)
+        .first()
+    )
     if not meeting:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

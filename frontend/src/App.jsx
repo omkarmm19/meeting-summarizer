@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { uploadAudioFile, getMeetingDetail, getMeetingsList, deleteMeeting } from './api/client';
+import {
+  uploadAudioFile,
+  getMeetingDetail,
+  getMeetingsList,
+  deleteMeeting,
+  getStoredUser,
+  getCurrentUser,
+  clearAuth,
+} from './api/client';
 import UploadForm from './components/UploadForm';
 import StatusStepper from './components/StatusStepper';
 import SummaryCard from './components/SummaryCard';
@@ -7,9 +15,11 @@ import ActionItemsList from './components/ActionItemsList';
 import TranscriptView from './components/TranscriptView';
 import MeetingHistory from './components/MeetingHistory';
 import AudioPlayer from './components/AudioPlayer';
+import AuthModal from './components/AuthModal';
 import { formatLocalDateTime } from './utils/date';
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
   const [meetings, setMeetings] = useState([]);
   const [currentMeeting, setCurrentMeeting] = useState(null);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
@@ -18,7 +28,23 @@ export default function App() {
 
   const pollTimerRef = useRef(null);
 
+  // Validate session on mount
+  useEffect(() => {
+    async function verifySession() {
+      if (currentUser) {
+        try {
+          const user = await getCurrentUser();
+          setCurrentUser(user);
+        } catch {
+          setCurrentUser(null);
+        }
+      }
+    }
+    verifySession();
+  }, []);
+
   const fetchMeetings = useCallback(async () => {
+    if (!currentUser) return;
     try {
       setIsHistoryLoading(true);
       const data = await getMeetingsList();
@@ -28,11 +54,16 @@ export default function App() {
     } finally {
       setIsHistoryLoading(false);
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
-    fetchMeetings();
-  }, [fetchMeetings]);
+    if (currentUser) {
+      fetchMeetings();
+    } else {
+      setMeetings([]);
+      setCurrentMeeting(null);
+    }
+  }, [currentUser, fetchMeetings]);
 
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
@@ -67,37 +98,38 @@ export default function App() {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const handleUploadSuccess = async (file) => {
+  const handleUploadSuccess = (uploadRes) => {
     setErrorMessage(null);
-    try {
-      const uploadRes = await uploadAudioFile(file);
-      setShowUploadModal(false);
-      setCurrentMeeting({
-        id: uploadRes.id,
-        filename: uploadRes.filename,
-        status: uploadRes.status,
-        created_at: uploadRes.created_at,
-      });
-      fetchMeetings();
-      startPolling(uploadRes.id);
-    } catch (err) {
-      setErrorMessage(err.message || 'Upload failed');
-      throw err;
-    }
+    const pendingMeeting = {
+      id: uploadRes.id,
+      filename: uploadRes.filename,
+      status: uploadRes.status,
+      file_size_bytes: 0,
+      created_at: uploadRes.created_at,
+      summary: null,
+      key_decisions: [],
+      action_items: [],
+      transcript: null,
+      error_message: null,
+    };
+    setCurrentMeeting(pendingMeeting);
+    setShowUploadModal(false);
+    startPolling(uploadRes.id);
   };
 
   const handleSelectMeeting = async (meetingId) => {
-    stopPolling();
     setErrorMessage(null);
+    stopPolling();
+
     try {
       const detail = await getMeetingDetail(meetingId);
       setCurrentMeeting(detail);
 
-      if (['pending', 'transcribing', 'summarizing'].includes(detail.status)) {
+      if (detail.status === 'pending' || detail.status === 'transcribing' || detail.status === 'summarizing') {
         startPolling(meetingId);
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Could not load meeting');
+      setErrorMessage(err.message || 'Failed to load meeting details');
     }
   };
 
@@ -111,6 +143,19 @@ export default function App() {
     } catch (err) {
       setErrorMessage(err.message || 'Failed to delete meeting');
     }
+  };
+
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    setErrorMessage(null);
+  };
+
+  const handleLogout = () => {
+    stopPolling();
+    clearAuth();
+    setCurrentUser(null);
+    setMeetings([]);
+    setCurrentMeeting(null);
   };
 
   const handleExportMarkdown = () => {
@@ -164,6 +209,11 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  // If user is not authenticated, show Auth Screen / Modal
+  if (!currentUser) {
+    return <AuthModal onAuthSuccess={handleAuthSuccess} />;
+  }
+
   return (
     <div className="app-layout">
       <MeetingHistory
@@ -177,18 +227,20 @@ export default function App() {
         }}
         onDeleteMeeting={handleDeleteMeeting}
         isLoading={isHistoryLoading}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       <main className="main-content">
         <header className="dashboard-header">
           <div className="dashboard-title-group">
             <h1>
-              {currentMeeting ? currentMeeting.filename : 'Meeting Summarizer'}
+              {currentMeeting ? currentMeeting.filename : 'Meeting Intelligence Workspace'}
             </h1>
             <p>
               {currentMeeting
                 ? `Uploaded on ${formatLocalDateTime(currentMeeting.created_at)}`
-                : 'Upload audio recordings to transcribe speech and extract action-oriented AI summaries'}
+                : `Welcome back, ${currentUser.full_name || currentUser.email}. Upload an audio recording to transcribe speech and extract AI summaries.`}
             </p>
           </div>
 

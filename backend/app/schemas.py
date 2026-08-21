@@ -71,6 +71,38 @@ class MeetingDetail(BaseModel):
         return dt.isoformat()
 
 
+class UserSignup(BaseModel):
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., min_length=6, description="Password (min 6 characters)")
+    full_name: Optional[str] = Field(None, description="User full name")
+
+
+class UserLogin(BaseModel):
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="User password")
+
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    full_name: Optional[str] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, dt: datetime, _info) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
 class HealthResponse(BaseModel):
     status: str
     database: str

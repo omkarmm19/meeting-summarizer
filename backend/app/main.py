@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from app.config import settings
 from app.database import engine, Base
-from app.routers import upload, meetings
+from app.routers import upload, meetings, auth
 from app.schemas import HealthResponse
 from app.services.redis_service import ping_redis
 
@@ -47,6 +47,7 @@ app.add_middleware(
 )
 
 # Register Routers
+app.include_router(auth.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
 app.include_router(meetings.router, prefix="/api")
 

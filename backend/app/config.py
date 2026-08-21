@@ -26,6 +26,11 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: str = "http://localhost,http://localhost:5173,http://localhost:80,http://localhost:3000"
 
+    # JWT Authentication Configuration
+    JWT_SECRET_KEY: str = "meetlytic-super-secret-jwt-key-2026-secure-token"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+
     model_config = SettingsConfigDict(
         env_file=_env_file,
         env_file_encoding="utf-8",

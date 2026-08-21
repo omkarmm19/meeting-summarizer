@@ -5,10 +5,11 @@ from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException,
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
-from app.models import Meeting, MeetingStatus
+from app.models import Meeting, MeetingStatus, User
 from app.schemas import MeetingUploadResponse
 from app.services.processor import process_meeting_audio
 from app.services.redis_service import update_meeting_cache
+from app.dependencies import get_current_user
 
 router = APIRouter(tags=["Upload"])
 logger = logging.getLogger(__name__)
@@ -35,7 +36,8 @@ ALLOWED_MIME_TYPES = {
 async def upload_meeting_audio(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="Audio file (mp3, wav, m4a, etc., max 25MB)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     if not file.filename:
         raise HTTPException(
@@ -102,6 +104,7 @@ async def upload_meeting_audio(
     # Create meeting DB record
     meeting = Meeting(
         id=meeting_id,
+        user_id=current_user.id,
         filename=file.filename,
         audio_path=target_path,
         file_size_bytes=total_bytes,
