@@ -1,6 +1,7 @@
 import os
 import logging
 from openai import OpenAI
+from groq import Groq
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -9,16 +10,20 @@ logger = logging.getLogger(__name__)
 def transcribe_audio(audio_path: str) -> str:
     """
     Transcribe audio file using OpenAI Whisper API.
+    If OpenAI quota is unavailable and Groq key is present, falls back to Groq Whisper.
     Falls back to mock transcription when MOCK_SERVICES is True or no valid API key is present.
     """
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at path: {audio_path}")
 
-    # Check if mock mode is active
-    api_key = settings.OPENAI_API_KEY.strip() if settings.OPENAI_API_KEY else ""
-    is_dummy_key = not api_key or api_key.startswith("your_") or api_key == "sk-dummy"
-    
-    if settings.MOCK_SERVICES or is_dummy_key:
+    openai_key = settings.OPENAI_API_KEY.strip() if settings.OPENAI_API_KEY else ""
+    groq_key = settings.GROQ_API_KEY.strip() if settings.GROQ_API_KEY else ""
+
+    is_dummy_openai = not openai_key or openai_key.startswith("your_") or openai_key == "sk-dummy"
+    is_dummy_groq = not groq_key or groq_key.startswith("your_") or groq_key == "gsk_dummy"
+
+    # If mock services explicitly enabled or no keys present at all
+    if settings.MOCK_SERVICES or (is_dummy_openai and is_dummy_groq):
         logger.info(f"[ASR Mock] Generating mock transcript for: {audio_path}")
         return (
             "Meeting Transcript - Q3 Product & Engineering Sync:\n\n"
@@ -40,21 +45,41 @@ def transcribe_audio(audio_path: str) -> str:
             "Alex: Excellent. Let's reconvene on Thursday for the mid-sprint check-in. Meeting adjourned."
         )
 
-    try:
-        client = OpenAI(api_key=api_key)
-        with open(audio_path, "rb") as audio_file:
-            logger.info(f"Submitting audio file to OpenAI Whisper API: {audio_path}")
-            transcript_response = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file,
-                response_format="text"
-            )
-            
-            # OpenAI Python SDK returns text directly when response_format="text" or Transcription object
-            if isinstance(transcript_response, str):
-                return transcript_response
-            return getattr(transcript_response, "text", str(transcript_response))
-            
-    except Exception as exc:
-        logger.error(f"Whisper transcription failed: {str(exc)}", exc_info=True)
-        raise RuntimeError(f"Whisper API transcription error: {str(exc)}") from exc
+    # 1. Primary: Try OpenAI Whisper API
+    if not is_dummy_openai:
+        try:
+            client = OpenAI(api_key=openai_key)
+            with open(audio_path, "rb") as audio_file:
+                logger.info(f"Submitting audio file to OpenAI Whisper API: {audio_path}")
+                transcript_response = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="text"
+                )
+                if isinstance(transcript_response, str):
+                    return transcript_response
+                return getattr(transcript_response, "text", str(transcript_response))
+        except Exception as exc:
+            logger.warning(f"OpenAI Whisper API call failed ({exc}). Checking fallback...")
+            if is_dummy_groq:
+                raise RuntimeError(f"OpenAI Whisper failed: {str(exc)}") from exc
+
+    # 2. Resilient Fallback: Groq Whisper API
+    if not is_dummy_groq:
+        try:
+            logger.info("Transcribing via Groq Whisper API (whisper-large-v3)...")
+            groq_client = Groq(api_key=groq_key)
+            with open(audio_path, "rb") as audio_file:
+                transcription = groq_client.audio.transcriptions.create(
+                    model="whisper-large-v3",
+                    file=audio_file,
+                    response_format="text"
+                )
+                if isinstance(transcription, str):
+                    return transcription
+                return getattr(transcription, "text", str(transcription))
+        except Exception as groq_exc:
+            logger.error(f"Groq Whisper transcription failed: {groq_exc}", exc_info=True)
+            raise RuntimeError(f"Whisper transcription failed: {str(groq_exc)}") from groq_exc
+
+    raise RuntimeError("No valid API key available for speech transcription.")
