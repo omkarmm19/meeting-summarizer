@@ -74,36 +74,46 @@ export default function MeetingHistory({
             {filterQuery ? 'No matching records' : 'No records yet'}
           </div>
         ) : (
-          filteredMeetings.map((meeting) => (
-            <div
-              key={meeting.id}
-              className={`history-item ${selectedMeetingId === meeting.id ? 'active' : ''}`}
-              onClick={() => onSelectMeeting(meeting.id)}
-            >
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div className="history-item-name" title={meeting.filename}>
-                  {meeting.filename}
-                </div>
-                <div className="history-item-meta">
-                  {formatShortDate(meeting.created_at)} • {meeting.status}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="btn-delete-item"
-                title="Delete recording"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm(`Delete recording "${meeting.filename}"?`)) {
-                    onDeleteMeeting(meeting.id);
-                  }
-                }}
+          filteredMeetings.map((meeting, index) => {
+            const isActive = selectedMeetingId === meeting.id;
+            return (
+              <div
+                key={meeting.id}
+                className={`history-item ${isActive ? 'active' : ''}`}
+                onClick={() => onSelectMeeting(meeting.id)}
+                role="button"
+                tabIndex={0}
               >
-                ✕
-              </button>
-            </div>
-          ))
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div className="history-item-name" title={meeting.filename}>
+                    {meeting.filename}
+                  </div>
+                  <div className="history-item-meta">
+                    <span>{formatShortDate(meeting.created_at)}</span>
+                    <span className="history-status-dot">• {meeting.status}</span>
+                  </div>
+                </div>
+
+                {isActive && (
+                  <span className="history-active-pill mono-text">Active</span>
+                )}
+
+                <button
+                  type="button"
+                  className="btn-delete-item"
+                  title="Delete recording"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Delete recording "${meeting.filename}"?`)) {
+                      onDeleteMeeting(meeting.id);
+                    }
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
 

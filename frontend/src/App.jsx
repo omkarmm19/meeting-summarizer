@@ -118,8 +118,15 @@ export default function App() {
   };
 
   const handleSelectMeeting = async (meetingId) => {
+    if (currentMeeting?.id === meetingId) return;
     setErrorMessage(null);
     stopPolling();
+
+    // Optimistic switch for instant UI responsiveness
+    const existing = meetings.find((m) => m.id === meetingId);
+    if (existing) {
+      setCurrentMeeting(existing);
+    }
 
     try {
       const detail = await getMeetingDetail(meetingId);

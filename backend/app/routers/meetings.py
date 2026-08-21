@@ -66,8 +66,9 @@ def get_meeting(
     return meeting
 
 
-@router.get(
+@router.api_route(
     "/{meeting_id}/audio",
+    methods=["GET", "HEAD"],
     summary="Stream raw meeting audio file for authenticated user playback"
 )
 def stream_meeting_audio(

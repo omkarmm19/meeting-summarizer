@@ -93,7 +93,7 @@ def summarize_transcript(transcript: str) -> MeetingStructuredSummary:
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                temperature=0.1,
+                temperature=0.0,
                 max_tokens=2048,
             )
             content = response.choices[0].message.content
