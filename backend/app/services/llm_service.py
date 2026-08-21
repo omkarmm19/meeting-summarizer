@@ -7,20 +7,44 @@ from app.schemas import MeetingStructuredSummary
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = (
-    "You are an assistant that extracts structured outcomes from meeting transcripts. "
-    "Always respond with valid JSON only, no extra text."
+    "You are an expert meeting analyst and executive intelligence assistant. "
+    "Your objective is to extract highly accurate, comprehensive, and factual structured information "
+    "from meeting transcripts with strict adherence to deadlines, timeframes, assignees, and decisions. "
+    "Always output valid, well-formed JSON conforming exactly to the requested schema."
 )
 
-USER_PROMPT_TEMPLATE = """Given the following meeting transcript, extract:
-1. "summary": a 3-4 sentence overview of what was discussed
-2. "key_decisions": array of strings, each a concrete decision made
-3. "action_items": array of objects with "task", "owner" (null if not mentioned), "deadline" (null if not mentioned)
+USER_PROMPT_TEMPLATE = """You are analyzing the following meeting transcript. Extract a highly accurate and comprehensive structured summary.
 
-Transcript:
+### INSTRUCTIONS:
+1. "summary":
+   - Write a clear, professional 3-4 sentence overview synthesizing the meeting's agenda, key discussion points, and conclusions.
+
+2. "key_decisions":
+   - List all concrete decisions, agreements, policy resolutions, or scheduling choices agreed upon during the discussion as an array of concise strings.
+
+3. "action_items":
+   - Extract all actionable tasks, requested deliverables, scheduled activities/breaks, presentation updates, and follow-ups.
+   - For each item:
+     * "task": A clear, concise description of the action required.
+     * "owner": The specific person, speaker, team, or role responsible (e.g., "Paul", "Ms. Reyes"). If no person is assigned or implied, set to null.
+     * "deadline": The precise deadline, scheduled time, clock time (e.g., "11:15 AM", "11:30 AM", "5:00 PM"), timeframe (e.g., "Before 11:30 arrival", "During 11:15 break", "By Friday", "End of meeting"), or milestone. 
+       CRITICAL: If ANY time, hour, schedule, or deadline is mentioned in connection with an action, you MUST extract and record it. Only set to null if absolutely no time or deadline was referenced.
+
+### TRANSCRIPT:
 {transcript}
 
-Respond only with JSON in this exact schema:
-{{"summary": "", "key_decisions": [], "action_items": [{{"task": "", "owner": null, "deadline": null}}]}}"""
+### REQUIRED JSON SCHEMA:
+{{
+  "summary": "String",
+  "key_decisions": ["String"],
+  "action_items": [
+    {{
+      "task": "String",
+      "owner": "String or null",
+      "deadline": "String or null"
+    }}
+  ]
+}}"""
 
 
 def get_mock_summary() -> MeetingStructuredSummary:
