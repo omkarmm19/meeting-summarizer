@@ -57,3 +57,6 @@ backend/storage/*.mp3
 *.swo
 .DS_Store
 Thumbs.db
+
+# Documentation
+INTERVIEW_NOTES.md
