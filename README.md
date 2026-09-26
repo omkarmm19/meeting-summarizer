@@ -3,6 +3,7 @@
 A full-stack AI meeting intelligence workspace that transcribes audio recordings using Whisper ASR, generates structured executive summaries, and extracts deadline-tracked action items with assigned owners using Groq LLMs.
 
 [![CI Pipeline](https://github.com/omkarmm19/meeting-summarizer/actions/workflows/ci.yml/badge.svg)](https://github.com/omkarmm19/meeting-summarizer/actions/workflows/ci.yml)
+[![CD Pipeline](https://github.com/omkarmm19/meeting-summarizer/actions/workflows/cd.yml/badge.svg)](https://github.com/omkarmm19/meeting-summarizer/actions/workflows/cd.yml)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-black?style=flat&logo=vercel)](https://meeting-summarizer-omkar.vercel.app)
 [![API Status](https://img.shields.io/badge/Backend_API-Render-46E3B7?style=flat&logo=render)](https://meeting-summarizer-4pe8.onrender.com/api/health)
 
@@ -89,7 +90,7 @@ A full-stack AI meeting intelligence workspace that transcribes audio recordings
 | **ASR (Speech-to-Text)** | OpenAI Whisper (`whisper-1`) + Groq Whisper (`whisper-large-v3`) fallback |
 | **LLM Inference** | Groq LPU (`openai/gpt-oss-120b`, `llama-3.3-70b-versatile`) in JSON Mode |
 | **Authentication** | JWT (JSON Web Tokens), Passlib Bcrypt |
-| **CI / CD & Cloud** | GitHub Actions, Vercel, Render, UptimeRobot |
+| **CI / CD & Cloud** | GitHub Actions, Docker Hub, Vercel, Render, UptimeRobot |
 | **Containerization** | Docker, Docker Compose, Nginx Reverse Proxy |
 
 ---
@@ -250,7 +251,13 @@ pytest backend/tests -v
 
 ## Continuous Integration & Deployment
 
-- **GitHub Actions (CI):** Every push to `main` executes unit tests, builds the frontend bundle, and validates Docker Compose configurations.
-- **Vercel (CD):** Automatically deploys frontend updates with edge caching and API proxying.
-- **Render (CD):** Automatically deploys FastAPI backend with Uvicorn worker management.
+The project implements a decoupled 2-workflow CI/CD architecture using GitHub Actions:
+
+- **GitHub Actions (CI - `ci.yml`):** Every push to `main` executes unit tests, validates Docker Compose configurations, and runs a frontend build check.
+- **GitHub Actions (CD - `cd.yml`):** Upon successful CI completion, this workflow:
+  1. Builds and pushes versioned Docker images (`:latest` and `:<commit-sha>`) for both frontend and backend to Docker Hub.
+  2. Triggers deployment webhooks to automatically update the live services.
+- **Docker Hub:** Acts as the single source of truth for versioned images, allowing for instant rollback and cloud-agnostic deployment.
+- **Vercel (Frontend CD):** Deploys frontend updates via a secure webhook triggered by the CD pipeline.
+- **Render (Backend CD):** Pulls the latest Docker image and deploys the FastAPI backend via a secure webhook triggered by the CD pipeline.
 - **UptimeRobot:** Monitors `https://meeting-summarizer-4pe8.onrender.com/` on a 5-minute interval to keep the free instance warm.

@@ -1,0 +1,56 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  docker-build-push:
+    name: Build & Push to Docker Hub
+    # Only run if CI Pipeline was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/meeting-summarizer-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/meeting-summarizer-backend:${{ github.sha }}
+
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/meeting-summarizer-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/meeting-summarizer-frontend:${{ github.sha }}
+
+  trigger-deployments:
+    name: Trigger Render & Netlify Webhooks
+    needs: docker-build-push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger Render Deploy (Backend)
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}" -o /dev/null -w "Render status: %{http_code}\n"
+          
+      - name: Trigger Vercel Deploy (Frontend)
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_FRONTEND }}" -o /dev/null -w "Vercel status: %{http_code}\n"
